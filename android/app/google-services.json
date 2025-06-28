@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "86507289545",
+    "project_id": "the-app-50d11",
+    "storage_bucket": "the-app-50d11.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:86507289545:android:5a1694755dca8caf008618",
+        "android_client_info": {
+          "package_name": "com.example.medibot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "86507289545-o69l6b0ma5qu61eskkvn60ogpvidpck2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAHQC3mOLo2Esx3E6LK357dyvMyp00sm7w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "86507289545-o69l6b0ma5qu61eskkvn60ogpvidpck2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
