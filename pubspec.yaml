@@ -39,10 +39,10 @@ flutter:
 # ✅ Splash screen configuration
 flutter_native_splash:
   color: "#0D1117"
-  image: assets/images/logo.png
+  image: assets/images/logo_circular.png
   branding: null
   android_12:
-    image: assets/images/logo.png
+    image: assets/images/logo_circular.png
     icon_background_color: "#0D1117"
 
 # ✅ Launcher icons configuration
