@@ -1,71 +1,79 @@
-# Medibot-flutter-app
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Asvix-04/MediBot-Flutter-App/main/assets/logo_circular.png" alt="MediBot Logo" width="200"/>
+</p>
 
-# MediBot – Your Smart Health Companion
+<h1 align="center">🤖 MediBot – Your Smart Health Companion</h1>
 
-MediBot is a Flutter-based mobile application designed to help users manage their medicine schedules, health records, and summaries using AI assistance. The app supports Firebase Authentication, secure data handling, and intelligent health report generation.
-
----
-
-## Features
-
-- Login/Signup with Firebase Auth (Email/Password)
--  Add & track medicine reminders
--  View medicine schedules
--  AI-powered health report summarization
--  Secure storage with Firestore
--  Simple and modern UI
--  Session management with SharedPreferences
+<p align="center">
+  <i>A Flutter-based mobile app to manage medications, health records, and generate AI-powered health summaries.</i>
+</p>
 
 ---
 
+## ✨ Features
+
+- 🔐 Firebase Auth (Email/Password login)
+- 💊 Track medicine reminders
+- 📅 Daily medication schedule
+- 🧠 AI-powered health reports
+- ☁️ Firestore integration
+- 📱 Responsive Flutter UI
+- 💾 SharedPreferences session management
 
 ---
 
-## CI/CD Workflow (GitHub → Firebase App Distribution)
+## 🚀 CI/CD with Firebase App Distribution
 
-This project uses **GitHub Actions** to automatically build and distribute the app through **Firebase App Distribution**.
+### 📦 Automated Workflow via GitHub Actions:
+- ✅ Flutter dependencies installed
+- 🛠 Release APK built
+- ☁️ APK uploaded to Firebase Distribution
 
-###  What Happens:
-- Every time code is pushed to `main`:
-  - Flutter dependencies are installed
-  - Release APK is built
-  - APK is uploaded to Firebase
-
-### How Testers Use It:
-- Testers receive an **email invite** (Gmail) via Firebase
-- Click the link → Sign in → Download the latest app build
-- Install the APK (enable "Install unknown apps" once)
+### 📲 Tester Instructions:
+1. 📧 Accept Firebase invite (Gmail)
+2. 🔗 Open the download link
+3. ✅ Sign in and install APK
+4. 🔓 Allow “Install unknown apps” if prompted
 
 ---
 
-## Tech Stack
+## 🧰 Tech Stack
 
-- **Framework**: Flutter 3.22
-- **Backend**: Firebase (Auth, Firestore, App Distribution)
-- **Language**: Dart
-- **State Management**: setState (can migrate to Provider or Riverpod)
-- **Others**: SharedPreferences, Form validation, Responsive layout
-
----
-
-## How to Test the App (For Team/Testers)
-
-1. Join the tester group using the Gmail invite sent via Firebase.
-2. Open the download link on an Android device.
-3. Sign in with your Gmail used for testing.
-4. Tap **Download** to get the latest build.
-5. Install the APK and start testing.
+| Category        | Technology                                |
+|----------------|--------------------------------------------|
+| 🧱 Framework    | Flutter 3.22                               |
+| 🔙 Backend      | Firebase (Auth, Firestore, Distribution)   |
+| 🧑‍💻 Language    | Dart                                       |
+| 🔄 State Mgmt   | `setState()` (can be extended to Riverpod) |
+| 💾 Local Store  | SharedPreferences                          |
 
 ---
 
-## For Developers
+## 🧪 How to Test (Internal QA/Testers)
+
+1. 📧 Accept Gmail invite to Firebase
+2. 📲 Open download page on Android
+3. 🔐 Sign in with your Gmail
+4. ⬇️ Tap **Download** to get latest version
+5. ✅ Begin testing the app
+
+---
+
+## 👨‍💻 Developer Setup
 
 ```bash
-# Clone the repo
-git clone https://github.com/Asvix-04/Medibot-Flutter-App.git
+# Clone the project
+git clone https://github.com/Asvix-04/MediBot-Flutter-App.git
 
-# Get packages
+# Install dependencies
 flutter pub get
 
 # Run the app
 flutter run
+```
+
+---
+
+## 🙌 Contributions Welcome
+
+Feel free to fork the repo, open issues, and submit pull requests to help improve MediBot.
