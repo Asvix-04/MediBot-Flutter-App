@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Asvix-04/MediBot-Flutter-App/main/assets/logo_circular.png" alt="MediBot Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/Asvix-04/MediBot-Flutter-App/main/assets/images/logo_circular.png" alt="MediBot Logo" width="200"/>
 </p>
 
 <h1 align="center">🤖 MediBot – Your Smart Health Companion</h1>
