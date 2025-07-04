@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Import your CloudinaryUploader class. Adjust the import path as needed.
+import 'package:medibot/utils/cloudinary_uploader.dart';
+
 class DoctorProfileScreen extends StatefulWidget {
   const DoctorProfileScreen({super.key});
 
@@ -15,6 +18,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
   bool isSaving = false;
 
   // Profile fields
+  String photoUrl = ""; // Add this to support custom profile photos.
   String fullName = "";
   String specialization = "";
   String clinicName = "";
@@ -39,8 +43,21 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
   void initState() {
     super.initState();
     for (var field in [
-      'fullName', 'specialization', 'clinicName', 'location', 'email', 'phone', 'gender', 'dob',
-      'regNumber', 'experience', 'qualification', 'consultationFee', 'available', 'languages', 'bio'
+      'fullName',
+      'specialization',
+      'clinicName',
+      'location',
+      'email',
+      'phone',
+      'gender',
+      'dob',
+      'regNumber',
+      'experience',
+      'qualification',
+      'consultationFee',
+      'available',
+      'languages',
+      'bio'
     ]) {
       _controllers[field] = TextEditingController();
     }
@@ -55,6 +72,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
     if (snap.exists) {
       final data = snap.data()!;
       setState(() {
+        photoUrl        = data['photoUrl'] ?? '';
         fullName        = data['fullName'] ?? '';
         specialization  = data['specialization'] ?? '';
         clinicName      = data['clinicName'] ?? '';
@@ -101,6 +119,7 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     await FirebaseFirestore.instance.collection('doctors').doc(user.uid).update({
+      'photoUrl': photoUrl,
       'fullName': _controllers['fullName']!.text.trim(),
       'specialization': _controllers['specialization']!.text.trim(),
       'clinicName': _controllers['clinicName']!.text.trim(),
@@ -123,6 +142,14 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
     });
     _fetchProfile();
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile updated")));
+  }
+
+  Future<void> _changeProfilePhoto() async {
+    final url = await CloudinaryUploader.uploadAndSaveProfilePhoto(role: "doctor");
+    if (url != null) {
+      setState(() => photoUrl = url);
+      // Your CloudinaryUploader already saves photoUrl to Firestore, but you can also update the Firestore doc here if needed.
+    }
   }
 
   void _showChangePasswordDialog() {
@@ -215,7 +242,9 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
 
   @override
   void dispose() {
-    for (final c in _controllers.values) { c.dispose(); }
+    for (final c in _controllers.values) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -238,7 +267,9 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
             ),
           if (isEditing)
             IconButton(
-              icon: isSaving ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2) : const Icon(Icons.save),
+              icon: isSaving
+                  ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                  : const Icon(Icons.save),
               onPressed: isSaving ? null : _saveProfile,
               tooltip: "Save Profile",
             ),
@@ -256,13 +287,16 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                 children: [
                   CircleAvatar(
                     radius: 32,
-                    backgroundImage: AssetImage('assets/default_doc_profile.png'),
+                    backgroundImage: photoUrl.isNotEmpty
+                        ? NetworkImage(photoUrl)
+                        : const AssetImage('assets/default_doc_profile.png') as ImageProvider,
                     backgroundColor: Colors.white,
                   ),
                   const SizedBox(height: 10),
                   Text(
                     fullName.isNotEmpty ? fullName : 'Doctor',
-                    style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     specialization.isNotEmpty ? specialization : '',
@@ -320,7 +354,9 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
             children: [
               CircleAvatar(
                 radius: 38,
-                backgroundImage: AssetImage('assets/default_doc_profile.png'),
+                backgroundImage: photoUrl.isNotEmpty
+                    ? NetworkImage(photoUrl)
+                    : const AssetImage('assets/default_doc_profile.png') as ImageProvider,
                 backgroundColor: Colors.grey[300],
               ),
               const SizedBox(width: 18),
@@ -329,7 +365,9 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(fullName, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                    if (specialization.isNotEmpty) Text(specialization, style: const TextStyle(fontSize: 16, color: Colors.grey)),
+                    if (specialization.isNotEmpty)
+                      Text(specialization,
+                          style: const TextStyle(fontSize: 16, color: Colors.grey)),
                     if (clinicName.isNotEmpty || location.isNotEmpty)
                       Text(
                         [clinicName, location].where((e) => e.isNotEmpty).join(", "),
@@ -371,7 +409,8 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
 
   Widget sectionHeader(String text) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Text(text, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.blue)),
+        child: Text(text,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.blue)),
       );
 
   Widget profileRow(String label, String value) => value.isEmpty
@@ -381,7 +420,9 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(width: 145, child: Text("$label:", style: const TextStyle(fontWeight: FontWeight.w500))),
+              SizedBox(
+                  width: 145,
+                  child: Text("$label:", style: const TextStyle(fontWeight: FontWeight.w500))),
               Expanded(child: Text(value)),
             ],
           ),
@@ -396,10 +437,28 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  radius: 38,
-                  backgroundImage: AssetImage('assets/default_doc_profile.png'),
-                  backgroundColor: Colors.grey[300],
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 38,
+                      backgroundImage: photoUrl.isNotEmpty
+                          ? NetworkImage(photoUrl)
+                          : const AssetImage('assets/default_doc_profile.png') as ImageProvider,
+                      backgroundColor: Colors.grey[300],
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: InkWell(
+                        onTap: _changeProfilePhoto,
+                        child: CircleAvatar(
+                          radius: 14,
+                          backgroundColor: Colors.blue,
+                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(width: 18),
                 Expanded(
@@ -409,14 +468,16 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
             ),
             const SizedBox(height: 14),
             sectionHeader("Personal Info"),
-            _buildTextField("Email", "email", inputType: TextInputType.emailAddress, required: true),
+            _buildTextField("Email", "email",
+                inputType: TextInputType.emailAddress, required: true),
             _buildTextField("Phone", "phone"),
             _buildTextField("Gender", "gender"),
             _buildTextField("DOB", "dob"),
             sectionHeader("Professional Info"),
             _buildTextField("Registration No.", "regNumber", required: true),
             _buildTextField("Specialization", "specialization", required: true),
-            _buildTextField("Experience (years)", "experience", inputType: TextInputType.number),
+            _buildTextField("Experience (years)", "experience",
+                inputType: TextInputType.number),
             _buildTextField("Qualifications", "qualification"),
             _buildTextField("Consultation Fee", "consultationFee"),
             _buildTextField("Available", "available"),
@@ -435,7 +496,11 @@ class _DoctorProfileScreenState extends State<DoctorProfileScreen> {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: TextFormField(
         controller: _controllers[key],
-        validator: required ? (v) => v == null || v.isEmpty ? "Required" : null : null,
+        validator: required
+            ? (v) => v == null || v.isEmpty
+                ? "Required"
+                : null
+            : null,
         keyboardType: inputType,
         maxLines: maxLines,
         decoration: InputDecoration(

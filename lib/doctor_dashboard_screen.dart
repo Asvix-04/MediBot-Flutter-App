@@ -21,6 +21,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
   String specialization = '';
   String clinicName = '';
   String email = '';
+  String photoUrl = '';
   bool loadingDoctor = true;
 
   Set<DateTime> confirmedDays = {};
@@ -48,6 +49,7 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
         specialization = data['specialization'] ?? '';
         clinicName = data['clinicName'] ?? '';
         email = data['email'] ?? '';
+        photoUrl = data['photoUrl'] ?? '';
         loadingDoctor = false;
       });
     } else {
@@ -86,7 +88,9 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: AssetImage('assets/default_doc_profile.png'),
+              backgroundImage: photoUrl.isNotEmpty
+                  ? NetworkImage(photoUrl)
+                  : const AssetImage('assets/default_doc_profile.png') as ImageProvider,
               radius: 18,
               backgroundColor: Colors.grey[300],
             ),
@@ -132,7 +136,9 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
-                    backgroundImage: AssetImage('assets/default_doc_profile.png'),
+                    backgroundImage: photoUrl.isNotEmpty
+                        ? NetworkImage(photoUrl)
+                        : const AssetImage('assets/default_doc_profile.png') as ImageProvider,
                     radius: 24,
                     backgroundColor: Colors.white,
                   ),
@@ -187,14 +193,15 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text('My Profile'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                Navigator.push(
+                await Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const DoctorProfileScreen(),
                   ),
                 );
+                _loadDoctorInfo();
               },
             ),
             const Divider(),
@@ -225,108 +232,111 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
     );
   }
 
+  /// FIXED: Prevent overflow by making calendar view scrollable and appointment list bounded.
   Widget _buildCalendarView() {
-    return Column(
-      children: [
-        TableCalendar(
-          firstDay: DateTime.utc(2020, 1, 1),
-          lastDay: DateTime.utc(2030, 12, 31),
-          focusedDay: _focusedDay,
-          selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-          calendarFormat: CalendarFormat.month,
-          onDaySelected: (selectedDay, focusedDay) {
-            setState(() {
-              _selectedDay = selectedDay;
-              _focusedDay = focusedDay;
-            });
-          },
-          calendarBuilders: CalendarBuilders(
-            defaultBuilder: (context, day, focusedDay) {
-              final isConfirmed = confirmedDays.contains(DateTime(day.year, day.month, day.day));
-              if (isConfirmed) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          TableCalendar(
+            firstDay: DateTime.utc(2020, 1, 1),
+            lastDay: DateTime.utc(2030, 12, 31),
+            focusedDay: _focusedDay,
+            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+            calendarFormat: CalendarFormat.month,
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {
+                _selectedDay = selectedDay;
+                _focusedDay = focusedDay;
+              });
+            },
+            calendarBuilders: CalendarBuilders(
+              defaultBuilder: (context, day, focusedDay) {
+                final isConfirmed = confirmedDays.contains(DateTime(day.year, day.month, day.day));
+                if (isConfirmed) {
+                  return Container(
+                    margin: const EdgeInsets.all(6.0),
+                    decoration: BoxDecoration(
+                      color: Colors.green[200],
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      '${day.day}',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  );
+                }
+                return null;
+              },
+              todayBuilder: (context, day, focusedDay) {
+                final isConfirmed = confirmedDays.contains(DateTime(day.year, day.month, day.day));
                 return Container(
                   margin: const EdgeInsets.all(6.0),
                   decoration: BoxDecoration(
-                    color: Colors.green[200],
+                    color: isConfirmed ? Colors.green[400] : Colors.blue[200],
                     borderRadius: BorderRadius.circular(8.0),
+                    border: Border.all(color: Colors.blue, width: 2),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     '${day.day}',
                     style: TextStyle(
-                      color: Colors.black,
+                      color: isConfirmed ? Colors.white : Colors.black,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 );
-              }
-              return null;
-            },
-            todayBuilder: (context, day, focusedDay) {
-              final isConfirmed = confirmedDays.contains(DateTime(day.year, day.month, day.day));
-              return Container(
-                margin: const EdgeInsets.all(6.0),
-                decoration: BoxDecoration(
-                  color: isConfirmed ? Colors.green[400] : Colors.blue[200],
-                  borderRadius: BorderRadius.circular(8.0),
-                  border: Border.all(color: Colors.blue, width: 2),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '${day.day}',
-                  style: TextStyle(
-                    color: isConfirmed ? Colors.white : Colors.black,
-                    fontWeight: FontWeight.bold,
+              },
+              selectedBuilder: (context, day, focusedDay) {
+                final isConfirmed = confirmedDays.contains(DateTime(day.year, day.month, day.day));
+                return Container(
+                  margin: const EdgeInsets.all(6.0),
+                  decoration: BoxDecoration(
+                    color: isConfirmed ? Colors.green[600] : Colors.blue,
+                    borderRadius: BorderRadius.circular(8.0),
                   ),
-                ),
-              );
-            },
-            selectedBuilder: (context, day, focusedDay) {
-              final isConfirmed = confirmedDays.contains(DateTime(day.year, day.month, day.day));
-              return Container(
-                margin: const EdgeInsets.all(6.0),
-                decoration: BoxDecoration(
-                  color: isConfirmed ? Colors.green[600] : Colors.blue,
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  '${day.day}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 10),
-        Center(
-          child: Column(
-            children: [
-              Text(
-                "Welcome, ${fullName.isNotEmpty ? fullName : 'Doctor'}!",
-                style: TextStyle(fontSize: 18, color: Colors.blue[800], fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 6),
-              _selectedDay == null
-                  ? const SizedBox.shrink()
-                  : Text(
-                      'Appointments on ${DateFormat.yMMMd().format(_selectedDay!)}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${day.day}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
-            ],
+                  ),
+                );
+              },
+            ),
           ),
-        ),
-        Expanded(
-          child: _selectedDay == null
-              ? const SizedBox.shrink()
-              : _buildFirestoreAppointmentListForDay(),
-        ),
-      ],
+          const SizedBox(height: 10),
+          Center(
+            child: Column(
+              children: [
+                Text(
+                  "Welcome, ${fullName.isNotEmpty ? fullName : 'Doctor'}!",
+                  style: TextStyle(fontSize: 18, color: Colors.blue[800], fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                _selectedDay == null
+                    ? const SizedBox.shrink()
+                    : Text(
+                        'Appointments on ${DateFormat.yMMMd().format(_selectedDay!)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+              ],
+            ),
+          ),
+          if (_selectedDay != null)
+            SizedBox(
+              height: 350, // Set a fixed height for the appointments list to prevent overflow
+              child: _buildFirestoreAppointmentListForDay(),
+            ),
+        ],
+      ),
     );
   }
 

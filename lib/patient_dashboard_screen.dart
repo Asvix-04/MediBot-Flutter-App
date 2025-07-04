@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'patient_profile_screen.dart';
-import 'patient_appointments_screen.dart'; // <-- Add this import
+import 'patient_appointments_screen.dart';
 
 class PatientDashboard extends StatefulWidget {
   const PatientDashboard({super.key});
@@ -14,6 +14,7 @@ class PatientDashboard extends StatefulWidget {
 class _PatientDashboardState extends State<PatientDashboard> {
   String? name;
   String? email;
+  String? photoUrl;
   bool isLoading = true;
 
   // Dynamic dashboard data
@@ -41,6 +42,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
       name = doc['name'] ?? 'Unknown';
       email = doc['email'] ?? 'unknown@example.com';
       healthScore = doc.data()?['healthScore'] ?? 50;
+      photoUrl = doc['photoUrl'] ?? null;
     }
 
     final patientRef = FirebaseFirestore.instance.collection('patients').doc(user.uid);
@@ -99,11 +101,32 @@ class _PatientDashboardState extends State<PatientDashboard> {
   }
 
   Widget _buildDashboardAvatar() {
-    // Use the same asset as in profile for consistency
+    if (photoUrl != null && photoUrl!.isNotEmpty) {
+      return CircleAvatar(
+        radius: 46,
+        backgroundColor: Colors.grey.shade800,
+        backgroundImage: NetworkImage(photoUrl!),
+      );
+    }
     return CircleAvatar(
       radius: 46,
       backgroundColor: Colors.grey.shade800,
-      backgroundImage: AssetImage('assets/default_profile.png'),
+      backgroundImage: const AssetImage('assets/default_profile.png'),
+    );
+  }
+
+  Widget _buildDrawerAvatar() {
+    if (photoUrl != null && photoUrl!.isNotEmpty) {
+      return CircleAvatar(
+        radius: 24,
+        backgroundColor: Colors.grey.shade800,
+        backgroundImage: NetworkImage(photoUrl!),
+      );
+    }
+    return CircleAvatar(
+      radius: 24,
+      backgroundColor: Colors.grey.shade800,
+      backgroundImage: const AssetImage('assets/default_profile.png'),
     );
   }
 
@@ -145,11 +168,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: Colors.grey.shade800,
-                          backgroundImage: AssetImage('assets/default_profile.png'),
-                        ),
+                        _buildDrawerAvatar(),
                         const SizedBox(height: 12),
                         Text(name ?? '', style: const TextStyle(color: Colors.white)),
                         Text(email ?? '', style: const TextStyle(color: Colors.white70)),
@@ -173,7 +192,7 @@ class _PatientDashboardState extends State<PatientDashboard> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const PatientProfileScreen()),
-                          );
+                          ).then((_) => _loadAllData());
                         } else if (item == "Appointments") {
                           Navigator.push(
                             context,

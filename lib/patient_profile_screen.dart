@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+// Add this import for your CloudinaryUploader (adjust the path as needed)
+import 'package:medibot/utils/cloudinary_uploader.dart';
 
 class PatientProfileScreen extends StatefulWidget {
   const PatientProfileScreen({super.key});
@@ -29,6 +31,9 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
   DateTime? _dob;
   String? _gender;
   String? _bloodType;
+
+  // Profile photo
+  String photoUrl = "";
 
   // Toggles
   bool medReminder = false;
@@ -65,6 +70,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
         _emergencyRelationController.text = data['emergencyRelation'] ?? '';
         _allergiesController.text = data['allergies'] ?? '';
         _conditionsController.text = data['conditions'] ?? '';
+        photoUrl = data['photoUrl'] ?? '';
 
         // Robust DOB parsing
         final dobValue = data['dob'];
@@ -119,6 +125,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
         'allergies': _allergiesController.text,
         'conditions': _conditionsController.text,
         'bloodType': _bloodType,
+        'photoUrl': photoUrl,
         'medReminder': medReminder,
         'apptReminder': apptReminder,
         'healthTips': healthTips,
@@ -141,6 +148,13 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
       lastDate: DateTime.now(),
     );
     if (picked != null) setState(() => _dob = picked);
+  }
+
+  Future<void> _changeProfilePhoto() async {
+    final url = await CloudinaryUploader.uploadAndSaveProfilePhoto(role: "patient");
+    if (url != null) {
+      setState(() => photoUrl = url);
+    }
   }
 
   Future<void> _exportData() async {
@@ -180,6 +194,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
       _gender = null;
       _bloodType = null;
       _dob = null;
+      photoUrl = "";
       medReminder = false;
       apptReminder = false;
       healthTips = false;
@@ -314,12 +329,29 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
       );
 
   Widget _buildProfileAvatar() {
-    // Use a static local asset image for the avatar
-    return CircleAvatar(
-      radius: 46,
-      backgroundColor: Colors.grey.shade800,
-      backgroundImage: AssetImage('assets/default_profile.png'),
-      child: null,
+    return Stack(
+      alignment: Alignment.bottomRight,
+      children: [
+        CircleAvatar(
+          radius: 46,
+          backgroundColor: Colors.grey.shade800,
+          backgroundImage: photoUrl.isNotEmpty
+              ? NetworkImage(photoUrl)
+              : const AssetImage('assets/default_profile.png') as ImageProvider,
+        ),
+        Positioned(
+          bottom: 0,
+          right: 0,
+          child: InkWell(
+            onTap: _changeProfilePhoto,
+            child: CircleAvatar(
+              backgroundColor: Colors.green,
+              radius: 15,
+              child: const Icon(Icons.camera_alt, color: Colors.white, size: 18),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -333,7 +365,9 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
           CircleAvatar(
             radius: 24,
             backgroundColor: Colors.grey.shade800,
-            backgroundImage: AssetImage('assets/default_profile.png'),
+            backgroundImage: photoUrl.isNotEmpty
+                ? NetworkImage(photoUrl)
+                : const AssetImage('assets/default_profile.png') as ImageProvider,
           ),
           const SizedBox(height: 12),
           Text(
