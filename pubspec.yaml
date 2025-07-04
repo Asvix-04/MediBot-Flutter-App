@@ -23,6 +23,9 @@ dependencies:
   # ✅ Email validation
   email_validator: ^2.1.17
 
+  # ✅ Open external applications
+  url_launcher: ^6.2.6
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

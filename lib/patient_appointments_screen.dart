@@ -16,6 +16,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
   DateTime? _selectedDay;
   String? patientName;
   String? patientEmail;
+  String? photoUrl;
   bool _drawerLoading = true;
   int _selectedTabIndex = 0; // 0 = Book, 1 = My Appointments
 
@@ -36,6 +37,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
       final doc = await FirebaseFirestore.instance.collection('patients').doc(user.uid).get();
       patientName = doc.data()?['name'] ?? 'Unknown';
       patientEmail = doc.data()?['email'] ?? 'unknown@example.com';
+      photoUrl = doc.data()?['photoUrl'];
     }
     setState(() => _drawerLoading = false);
   }
@@ -77,7 +79,9 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                         CircleAvatar(
                           radius: 24,
                           backgroundColor: Colors.grey.shade800,
-                          backgroundImage: AssetImage('assets/default_profile.png'),
+                          backgroundImage: (photoUrl != null && photoUrl!.isNotEmpty)
+                            ? NetworkImage(photoUrl!)
+                            : const AssetImage('assets/default_profile.png'),
                         ),
                         const SizedBox(height: 12),
                         Text(patientName ?? '', style: const TextStyle(color: Colors.white)),
@@ -86,16 +90,16 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                     ),
                   ),
                   ListTile(
-                    leading: Icon(Icons.home, color: Colors.white),
-                    title: Text('Dashboard', style: TextStyle(color: Colors.white)),
+                    leading: const Icon(Icons.home, color: Colors.white),
+                    title: const Text('Dashboard', style: TextStyle(color: Colors.white)),
                     onTap: () {
                       Navigator.of(context).pop(); // Close drawer
                       Navigator.of(context).pop(); // Go back to dashboard
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.calendar_today, color: Colors.white),
-                    title: Text('My Appointments', style: TextStyle(color: Colors.white)),
+                    leading: const Icon(Icons.calendar_today, color: Colors.white),
+                    title: const Text('My Appointments', style: TextStyle(color: Colors.white)),
                     selected: _selectedTabIndex == 1,
                     onTap: () {
                       Navigator.pop(context); // Close drawer
@@ -105,8 +109,8 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                     },
                   ),
                   ListTile(
-                    leading: Icon(Icons.logout, color: Colors.white),
-                    title: Text('Logout', style: TextStyle(color: Colors.white)),
+                    leading: const Icon(Icons.logout, color: Colors.white),
+                    title: const Text('Logout', style: TextStyle(color: Colors.white)),
                     onTap: () async {
                       await FirebaseAuth.instance.signOut();
                       Navigator.of(context).popUntil((route) => route.isFirst);
@@ -167,7 +171,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
           padding: const EdgeInsets.all(14.0),
           child: TableCalendar(
             firstDay: DateTime.now(),
-            lastDay: DateTime.now().add(Duration(days: 365)),
+            lastDay: DateTime.now().add(const Duration(days: 365)),
             focusedDay: _focusedDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
             onDaySelected: (selectedDay, focusedDay) {
@@ -185,20 +189,20 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                 color: Colors.orange,
                 shape: BoxShape.circle,
               ),
-              weekendTextStyle: TextStyle(color: Colors.redAccent),
+              weekendTextStyle: const TextStyle(color: Colors.redAccent),
             ),
             headerStyle: HeaderStyle(
               formatButtonVisible: false,
               titleCentered: true,
-              titleTextStyle: TextStyle(fontWeight: FontWeight.bold),
-              leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
-              rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
+              titleTextStyle: const TextStyle(fontWeight: FontWeight.bold),
+              leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.white),
+              rightChevronIcon: const Icon(Icons.chevron_right, color: Colors.white),
               decoration: BoxDecoration(
-                color: Color(0xFF161B22),
+                color: const Color(0xFF161B22),
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            daysOfWeekStyle: DaysOfWeekStyle(
+            daysOfWeekStyle: const DaysOfWeekStyle(
               weekendStyle: TextStyle(color: Colors.redAccent),
             ),
             calendarFormat: CalendarFormat.month,
@@ -215,7 +219,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                     alignment: Alignment.center,
                     child: Text(
                       '${day.day}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
@@ -292,7 +296,9 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                       },
                       child: CircleAvatar(
                         backgroundColor: Colors.grey.shade800,
-                        backgroundImage: AssetImage('assets/default_doc_profile.png'),
+                        backgroundImage: (data['photoUrl'] != null && (data['photoUrl'] as String).isNotEmpty)
+                          ? NetworkImage(data['photoUrl'])
+                          : const AssetImage('assets/default_doc_profile.png') as ImageProvider,
                       ),
                     ),
                     title: Text(data['fullName'] ?? 'Doctor'),
@@ -370,13 +376,17 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
             final String reason = data['reason'] ?? '';
             final String notes = data['notes'] ?? '';
             final String clinicName = data['clinicName'] ?? '';
+            final String? doctorPhotoUrl = data['doctorPhotoUrl'];
+
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               elevation: 4,
               child: ListTile(
                 leading: CircleAvatar(
                   backgroundColor: Colors.grey.shade800,
-                  backgroundImage: AssetImage('assets/default_doc_profile.png'),
+                  backgroundImage: (doctorPhotoUrl != null && doctorPhotoUrl.isNotEmpty)
+                    ? NetworkImage(doctorPhotoUrl)
+                    : const AssetImage('assets/default_doc_profile.png') as ImageProvider,
                 ),
                 title: Text(doctorName, style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Padding(
@@ -583,6 +593,7 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
                 final appointmentRef = await FirebaseFirestore.instance.collection('appointments').add({
                   'doctorId': doctorId,
                   'doctorName': doctorData['fullName'] ?? '',
+                  'doctorPhotoUrl': doctorData['photoUrl'] ?? '',
                   'clinicName': doctorData['clinicName'] ?? '',
                   'patientId': patient.uid,
                   'patientName': patientName,

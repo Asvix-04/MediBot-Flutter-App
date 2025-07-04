@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'patient_profile_screen.dart';
 import 'patient_appointments_screen.dart';
+import 'chatbot_screen.dart';
+import 'feedback_screen.dart';
 
 class PatientDashboard extends StatefulWidget {
   const PatientDashboard({super.key});
@@ -197,6 +199,17 @@ class _PatientDashboardState extends State<PatientDashboard> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const PatientAppointmentsScreen()),
+                          );
+                        } else if (item == "AI Chatbot") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder:(_) => const ChatbotScreen()),
+                          );
+                        }
+                        else if (item == "Feedback") {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder:(_) => const FeedbackScreen()),
                           );
                         }
                         // Add navigation for other items if needed

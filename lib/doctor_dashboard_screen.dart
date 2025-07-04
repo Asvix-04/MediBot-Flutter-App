@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import 'doctor_profile_screen.dart';
+import 'feedback_screen.dart';
 
 class DoctorDashboard extends StatefulWidget {
   const DoctorDashboard({super.key});
@@ -204,6 +205,18 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
                 _loadDoctorInfo();
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.feedback),
+              title: const Text('Feedback'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FeedbackScreen(),
+                  ),
+                );
+              },
+            ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.settings),
@@ -373,17 +386,31 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
               child: ListTile(
-                leading: GestureDetector(
-                  onTap: () async {
-                    final patientId = appt['patientId'];
-                    if (patientId != null) {
-                      _showPatientProfileDialog(context, patientId);
+                leading: FutureBuilder<DocumentSnapshot>(
+                  future: FirebaseFirestore.instance.collection('patients').doc(appt['patientId']).get(),
+                  builder: (context, snapshot) {
+                    String imageUrl = 'assets/default_profile.png';
+                    Map<String, dynamic>? data;
+                    if (snapshot.hasData && snapshot.data!.exists) {
+                      data = snapshot.data!.data() as Map<String, dynamic>;
+                      if (data['photoUrl'] != null && data['photoUrl'].toString().isNotEmpty) {
+                        imageUrl = data['photoUrl'];
+                      }
                     }
+                    return GestureDetector(
+                      onTap: () {
+                        if (data != null) {
+                          _showPatientProfileDialog(context, appt['patientId']);
+                        }
+                      },
+                      child: CircleAvatar(
+                        backgroundImage: imageUrl.startsWith('http')
+                          ? NetworkImage(imageUrl)
+                          : AssetImage(imageUrl) as ImageProvider,
+                        backgroundColor: Colors.grey[300],
+                      ),
+                    );
                   },
-                  child: CircleAvatar(
-                    backgroundImage: AssetImage('assets/default_profile.png'),
-                    backgroundColor: Colors.grey[300],
-                  ),
                 ),
                 title: Text('${appt['patientName']} - ${DateFormat.jm().format(dateTime)}'),
                 subtitle: Text(appt['status'] ?? ''),
@@ -427,18 +454,35 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
             final dateTime = (appt['dateTime'] as Timestamp).toDate();
             return Card(
               child: ListTile(
-                leading: GestureDetector(
-                  onTap: () async {
-                    final patientId = appt['patientId'];
-                    if (patientId != null) {
-                      _showPatientProfileDialog(context, patientId);
-                    }
-                  },
-                  child: CircleAvatar(
-                    backgroundImage: AssetImage('assets/default_profile.png'),
-                    backgroundColor: Colors.grey[300],
-                  ),
-                ),
+                leading: FutureBuilder<DocumentSnapshot>(
+  future: FirebaseFirestore.instance.collection('patients').doc(appt['patientId']).get(),
+  builder: (context, snapshot) {
+    String imageUrl = 'assets/default_profile.png';
+    Map<String, dynamic>? data;
+
+    if (snapshot.hasData && snapshot.data!.exists) {
+      data = snapshot.data!.data() as Map<String, dynamic>;
+      if (data['photoUrl'] != null && data['photoUrl'].toString().isNotEmpty) {
+        imageUrl = data['photoUrl'];
+      }
+    }
+
+    return GestureDetector(
+      onTap: () {
+        if (data != null) {
+          _showPatientProfileDialog(context, appt['patientId']);
+        }
+      },
+      child: CircleAvatar(
+        backgroundImage: imageUrl.startsWith('http')
+            ? NetworkImage(imageUrl)
+            : AssetImage(imageUrl) as ImageProvider,
+        backgroundColor: Colors.grey[300],
+      ),
+    );
+  },
+),
+
                 title: Text('${appt['patientName']} - ${DateFormat.jm().format(dateTime)}'),
                 subtitle: Text('${DateFormat.yMMMd().format(dateTime)} - ${appt['status'] ?? ''}'),
                 trailing: const Icon(Icons.more_vert),
@@ -654,18 +698,35 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
       return;
     }
     final data = doc.data()!;
+    final String name = data['name'] ?? 'Patient';
+    final String email = data['email'] ?? '';
+    final String phone = data['phone'] ?? '';
+    final String gender = data['gender'] ?? '';
+    final String dob = _formatDob(data['dob']);
+    final String photoUrl = data['photoUrl'] ?? '';
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text(data['name'] ?? 'Patient Profile'),
+        title: Row(
+          children: [
+            CircleAvatar(
+              backgroundImage: photoUrl.isNotEmpty
+                ? NetworkImage(photoUrl)
+                : const AssetImage('assets/default_Profile.png') as ImageProvider,
+              radius: 24,
+            ),
+            const SizedBox(width: 10),
+            Expanded(child: Text(name)),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (data['email'] != null) Text('Email: ${data['email']}'),
-            if (data['phone'] != null) Text('Phone: ${data['phone']}'),
-            if (data['gender'] != null) Text('Gender: ${data['gender']}'),
-            if (data['dob'] != null) Text('DOB: ${_formatDob(data['dob'])}'),
+            if (email.isNotEmpty) Text('Email: $email'),
+            if (phone.isNotEmpty) Text('Phone: $phone'),
+            if (gender.isNotEmpty) Text('Gender: $gender'),
+            if (dob.isNotEmpty) Text('DOB: $dob'),
             // Add any other fields you store for patients here
           ],
         ),
