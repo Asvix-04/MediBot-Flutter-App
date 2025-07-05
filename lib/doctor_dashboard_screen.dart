@@ -103,10 +103,40 @@ class _DoctorDashboardState extends State<DoctorDashboard> with TickerProviderSt
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {},
-            tooltip: 'Notifications',
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance
+              .collection('appointments')
+              .where('doctorId', isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+              .where('status', isEqualTo: 'pending')
+              .snapshots(),
+            builder: (context, snapshot) {
+              final hasPending = snapshot.hasData && snapshot.data!.docs.isNotEmpty;
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications),
+                    onPressed: () {
+                      // Navigate to notification/appointment list page
+                      _buildAppointmentsView();
+                    },
+                    tooltip: 'Notifications',
+                  ),
+                  if (hasPending)
+                    Positioned(
+                      right: 10,
+                      top: 10,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.logout),

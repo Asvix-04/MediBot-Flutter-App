@@ -323,7 +323,21 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(doctorData['fullName'] ?? 'Doctor Profile'),
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: Colors.grey.shade300,
+              backgroundImage: (doctorData['photoUrl'] != null && doctorData['photoUrl'].toString().isNotEmpty)
+                ? NetworkImage(doctorData['photoUrl'])
+                : const AssetImage('assets/default_doc_profile.png') as ImageProvider,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(doctorData['fullName'] ?? 'Doctor Profile'),
+            ),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,11 +396,27 @@ class _PatientAppointmentsScreenState extends State<PatientAppointmentsScreen> {
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               elevation: 4,
               child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Colors.grey.shade800,
-                  backgroundImage: (doctorPhotoUrl != null && doctorPhotoUrl.isNotEmpty)
-                    ? NetworkImage(doctorPhotoUrl)
-                    : const AssetImage('assets/default_doc_profile.png') as ImageProvider,
+                leading: GestureDetector(
+                  onTap: () async {
+                    final doctorId = data['doctorId'];
+                    if (doctorId != null) {
+                      final docSnapshot = await FirebaseFirestore.instance.collection('doctors').doc(doctorId).get();
+                      if (docSnapshot.exists) {
+                        final doctorData = docSnapshot.data()!;
+                        _showDoctorFullProfileDialog(context, doctorData);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Doctor profile not found.')),
+                        );
+                      }
+                    }
+                  },
+                  child: CircleAvatar(
+                    backgroundColor: Colors.grey.shade800,
+                    backgroundImage: (doctorPhotoUrl != null && doctorPhotoUrl.isNotEmpty)
+                      ? NetworkImage(doctorPhotoUrl)
+                      : const AssetImage('assets/default_doc_profile.png') as ImageProvider,
+                  ),
                 ),
                 title: Text(doctorName, style: const TextStyle(fontWeight: FontWeight.bold)),
                 subtitle: Padding(
